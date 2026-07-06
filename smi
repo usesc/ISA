@@ -1,0 +1,130 @@
+[ISZ4][OPC4] [args] 
+
+Variable length
+
+10h = RET
+20h = CTL3 REG5
+30h = CTL5 REG5 REG5
+40h = CTL8 RES1 REG5 REG5 REG5
+41h = CTL3 REG5 REG5 IMM11
+42h = CTL4 REG5 REG5 IMM10
+60h = CTL3 REG5 IMM32
+
+save for ADDI:
+[0:5 CTL6] [6:10 RD] [11:15 RSRC] [16:23 IMM8]
+
+// RISC-W 32-bit Ultra Low Power Small Die
+
+readable Zero register (rc0)
+Writable and readable IP (rc1)
+Writable and readable SP (rc2)
+
+RW32ULPSD
+
+[10h] RET (Return)
+
+[30h]
+0h = CMP (Compare two registers)
+
+[40h]
+0h = ADD (Addition)
+1h = SUB (Subtraction)
+2h = SHL (Shift left)
+3h = SHR (Shift right)
+4h = SAR (Shift arithmetic right)
+5h = AND (bitwise AND)
+6h = OR  (bitwise OR)
+7h = XOR (bitwise XOR)
+
+[41h]
+0h = JZ  (Jump if Zero)
+1h = JNZ (Jump if Not Zero)
+2h = JL  (Jump if Less than)
+3h = JGE (Jump if Greater or Equal)
+4h = JLU  (Jump if Less Unsigned)
+5h = JGEU (Jump if Greater or Equal Unsigned)
+
+[42h]
+0h = LDW (Load word)
+1h = STW (Store word)
+
+[60h]
+0h = LIW (Load Immediate Word)
+
+RW32ULPSD
+
+1-0 = RET
+2-0 = CTL3 REG5
+2-1 = ADD r0-r15, imm4
+2-2 = SUB r0-r15, imm4
+3-0 = CTL5 REG5 REG5
+3-1 = CTL1 REG5 REG5 REG5
+3-2 = CTL1 REG5 REG5 REG5
+3-3 = CTL1 REG5 REG5 REG5
+3-4 = CTL3 REG5 IMM8
+4-0 = CTL4 IMM20
+4-1 = CTL4 REG5 REG5 IMM10
+4-2 = CTL3 REG5 IMM16
+4-3 = CTL4 REG5 REG5 IMM10
+6-0 = CTL3 REG5 IMM32
+
+RW64I
+
+[1-0] RET (Return)
+[1-1] NOP (No Op)
+[1-2] HLT (Halt)
+
+[2-0]:0 PUSH
+[2-0]:1 POP
+[2-0]:2 JMP
+[2-0]:3 CALL
+
+[2-1] ADDI
+[2-2] SUBI
+
+[3-0]:0 CMP
+[3-0]:1 NOT
+[3-0]:2 SHL
+[3-0]:3 SHR
+[3-0]:4 SAR
+
+[3-1] ADD/SUB
+[3-2] AND/OR
+[3-3] XOR/RESERVED
+
+[3-4]:0 CMPI 
+[3-4]:1 ADDI
+[3-4]:2 SUBI
+[3-4]:3 ANDI
+[3-4]:4 SHLI
+[3-4]:5 SHRI
+[3-4]:6 SARI
+[3-4]:7 ORI
+
+[4-0]:0 CALL (for functions)
+[4-0]:1 JMP (Jump)
+
+[4-1]:0 LB (load byte)
+[4-1]:1 LBU (load byte unsigned)
+[4-1]:2 SB (store byte)
+[4-1]:3 LH (load halfword)
+[4-1]:4 LHU (load halfword unsigned)
+[4-1]:5 SH (store halfword)
+[4-1]:6 LW (load word)
+[4-1]:7 LWU (load word unsigned)
+[4-1]:8 SW (store word)
+[4-1]:9 LD (load doubleword)
+[4-1]:A SD (store doubleword)
+
+[4-2]:0 LIH (Load immediate half)
+
+[4-3]:0 JZ (Jump if Zero)
+[4-3]:1 JNZ (Jump if Not Zero)
+[4-3]:2 JL  (Jump if Less than)
+[4-3]:3 JGE (Jump if Greater or Equal)
+[4-3]:4 JLU  (Jump if Less Unsigned)
+[4-3]:5 JGEU (Jump if Greater or Equal Unsigned)
+
+[6-0]:0 LIW (Load Immediate Word)
+[6-0]:1 LUI (Load upper immediate)
+[6-0]:2 ANDI 

@@ -1,0 +1,146 @@
+Abnormal Instruction Encoding:
+
+OVERVIEW:
+
+Headered Instructions:
+[ Header ][ Opcode ][ Params ]
+
+Non-Headered Instructions:
+[ Opcode ][ Params ]
+
+Header context:
+	bit 0-3: Payload size (0-15)
+	bit 4: Immediate sign (0 = unsigned, 1 = negative)
+	bit 5: Mod extension (0 = non-complex)
+	bit 6: Opcode-2 switch (1 = extended opcode)
+	bit 7: Header switch (1 = headered instruction)
+
+Non-Headered instruction context:
+	bit 0-6: Opcode enum (128 instructions)
+	bit 7: Header switch (0 = non-headered)
+
+Register Byte 1 (REG1):
+	bit 0-3: src register (r0-r15)
+	bit 4-7: dest register (r0-r15)
+
+Register Byte 2 (REG2):
+	bit 0-4: Register (r0-r31)
+	bit 5-6: Register size (8,16,32,64)(bits)
+	bit 7: r/m flag
+
+Memory Byte (MEM1):
+	bit 0-4: Base register (r0-r31)
+	bit 5-6: Mod
+	bit 7: r/m flag
+
+Memory Extension Byte (MEM2):
+	bit 0-4: Index register (r0-r31)
+	bit 5-6: Scale (1x, 2x, 4x, 8x)
+	bit 7: Displacement sign 
+			(signed until mem-ext appears)
+
+Addressing modes (MOD):
+	000b = [reg]
+	001b = [reg + disp8]
+	010b = [reg + disp16]
+	011b = [reg + disp32]
+	100b = [reg + reg*scale]
+	101b = [reg + reg*scale + disp8]
+	110b = [reg + reg*scale + disp16]
+	111b = [reg + reg*scale + disp32]
+* Modes >= 100 require a Memory Extension byte
+
+Implicit Immediates:
+	If no immediate found:
+		sign = 1, immediate equals -1
+		sign = 0, immediate equals 0
+
+Instruction Size Formulae:
+	Headered: 
+		size = payload_size + 2 + bit_6
+	Non-Headered: 
+		size = payload_size + 1
+
+Immediate Size Formula:
+ASSUME:
+S = instruction size
+B = bytes before immediate
+I = immediate size
+	FORMULA: I = S - B
+
+Special Registers:
+	r31 = Instruction Pointer
+	r30 = Stack Pointer
+
+Design Principles
+- Variable-length immediates (1-8 bytes, odd sizes allowed)
+- Instruction boundary defines immediate boundary
+- r/m bit: 0 = register, 1 = memory
+- Memory extension required for scaled addressing modes
+
+
+WIP Set
+
+MOV r/m, r/m (hdr, opc, r/m, r/m) (4b+)
+MOV r32, r32 (opc, reg, reg) (2b)
+MOV r64, r64 (opc, reg, reg) (2b)
+
+ADD r/m, r/m, r/m (hdr, opc, r/m, r/m, r/m) (5b+)
+ADD r/m, r/m      (hdr, opc, r/m, r/m) (4b+)
+ADD r32, r32 (opc, reg, reg) (2b)
+ADD r64, r64 (opc, reg, reg) (2b)
+
+SUB r/m, r/m, r/m (hdr, opc, r/m, r/m, r/m) (5b+)
+SUB r/m, r/m      (hdr, opc, r/m, r/m) (4b+)
+SUB r32, r32 (opc, reg, reg) (2b)
+SUB r64, r64 (opc, reg, reg) (2b)
+
+MUL r/m, r/m, r/m (hdr, opc, r/m, r/m, r/m) (5b+)
+MUL r/m, r/m      (hdr, opc, r/m, r/m) (4b+)
+MUL r32, r32 (opc, reg, reg) (2b)
+MUL r64, r64 (opc, reg, reg) (2b)
+
+DIV r/m, r/m, r/m (hdr, opc, r/m, r/m, r/m) (5b+)
+DIV r/m, r/m      (hdr, opc, r/m, r/m) (4b+)
+
+AND r/m, r/m, r/m (hdr, opc, r/m, r/m, r/m) (5b+)
+AND r/m, r/m      (hdr, opc, r/m, r/m) (4b+)
+AND r32, r32 (opc, reg, reg) (2b)
+AND r64, r64 (opc, reg, reg) (2b)
+
+OR r/m, r/m, r/m (hdr, opc, r/m, r/m, r/m) (5b+)
+OR r/m, r/m      (hdr, opc, r/m, r/m) (4b+)
+OR r32, r32 (opc, reg, reg) (2b)
+OR r64, r64 (opc, reg, reg) (2b)
+
+XOR r/m, r/m, r/m (hdr, opc, r/m, r/m, r/m) (5b+)
+XOR r/m, r/m      (hdr, opc, r/m, r/m) (4b+)
+XOR r32, r32 (opc, reg, reg) (2b)
+XOR r64, r64 (opc, reg, reg) (2b)
+
+NOT r/m, r/m (hdr, opc, r/m, r/m) (4b+)
+NOT r32, r32 (opc, reg, reg) (2b)
+NOT r64, r64 (opc, reg, reg) (2b)
+
+SHL r/m, r/m, r/m (hdr, opc, r/m, r/m, r/m) (5b+)
+SHL r/m, r/m      (hdr, opc, r/m, r/m) (4b+)
+SHL r32, r32 (opc, reg, reg) (2b)
+SHL r64, r64 (opc, reg, reg) (2b)
+
+SHR r/m, r/m, r/m (hdr, opc, r/m, r/m, r/m) (5b+)
+SHR r/m, r/m      (hdr, opc, r/m, r/m) (4b+)
+SHR r32, r32 (opc, reg, reg) (2b)
+SHR r64, r64 (opc, reg, reg) (2b)
+
+SAR r/m, r/m, r/m (hdr, opc, r/m, r/m, r/m) (5b+)
+SAR r/m, r/m      (hdr, opc, r/m, r/m) (4b+)
+SAR r32, r32 (opc, reg, reg) (2b)
+SAR r64, r64 (opc, reg, reg) (2b)
+
+CMP r/m, r/m (hdr, opc, r/m, r/m) (4b+)
+CMP r64, r64 (opc, reg, reg) (2b)
+
+JMP imm8 (opc, imm8) (2b)
+JMP imm16 (opc, imm16) (3b)
+JMP imm32 (opc, imm32) (5b)
+

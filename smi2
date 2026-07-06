@@ -1,0 +1,174 @@
+ARITHMETIC 
+CONTROL FLOW
+MEMORY 
+
+
+CONDITIONAL BRANCHING 
+BITWISE 
+ARITHMETIC
+MEMORY
+
+9/64
+
+MSEM4:
+POST-INCREMENT
+	r8+  r16+ 
+	r32+ r64+ 
+PRE-DECREMENT
+	-r8  -r16
+	-r32 -r64
+NONE
+	r8  r16
+	r32 r64
+RESERVED
+	res res
+	res res
+
+FORMATS: 
+0 OPC6, REG5, REG5, MSEM4, SOFF12     (6+5+5+4+12   = 32 bits) (1 ins)
+1 OPC6, REG5, REG5, MSEM4, SOFF12     (6+5+5+4+12   = 32 bits) (1 ins)
+2 OPC6, REG5, REG5, IN4, SIMM12       (6+5+5+4+12   = 32 bits) (16 ins)
+3 OPC6, REG5, REG5, IN3, SOFF13       (6+5+5+3+13   = 32 bits) (8 ins)
+4 OPC6, REG5, REG5, IN2, IMM6         (6+5+5+2+6    = 24 bits) (4 ins)
+5 OPC6, REG5, REG5, REG5, IN3         (6+5+5+5+3    = 24 bits) (8 ins)
+6 OPC6, REG5, IN5                     (6+5+5        = 16 bits) (32 ins)
+7 OPC6, IN2,  SIMM16                  (6+2+16       = 24 bits) (4 ins)
+8 OPC6, REG5, IN5, IMM32              (6+5+5+32     = 48 bits) (32 ins)
+9 OPC6, IN2                           (6+2          = 8  bits) (4 ins)
+
+INSTRUCTIONS
+0 LDR reg5b, [reg5b inc/dec, soff12]
+1 STR reg5b, [reg5b inc/dec, soff12]
+
+2:0 ADDI reg5b, reg5b, simm12
+2:1 ANDI reg5b, reg5b, simm12
+2:2 XORI reg5b, reg5b, simm12
+2:3 ORI  reg5b, reg5b, simm12
+2:4 - 2:15
+
+3:4 BEQ  reg5b, reg5b, simm12
+3:5 BNE  reg5b, reg5b, simm12
+3:6 BLT  reg5b, reg5b, simm12
+3:7 BLTU reg5b, reg5b, simm12
+3:8 BGE  reg5b, reg5b, simm12
+3:9 BGEU reg5b, reg5b, simm12
+
+4:0 SHLI reg5b, reg5b, imm6
+4:1 SHRI reg5b, reg5b, imm6
+4:2 SARI reg5b, reg5b, imm6
+4:3
+
+5:0 ADD reg5b, reg5b, reg5b
+5:1 SUB reg5b, reg5b, reg5b
+5:2 AND reg5b, reg5b, reg5b
+5:3 OR  reg5b, reg5b, reg5b
+5:4 XOR reg5b, reg5b, reg5b
+5:5 SHL reg5b, reg5b, reg5b
+5:6 SHR reg5b, reg5b, reg5b
+5:7 SAR reg5b, reg5b, reg5b
+
+6:0 PUSH reg5b 
+6:1 POP  reg5b
+6:2 CALL reg5b 
+6:3 JMP  reg5b
+6:4 - 6:31
+
+7:0 CALL simm16 
+7:1 JMP  simm16
+7:2 - 7:3
+
+8:0 LDI imm32 
+8:1 LUI imm32 
+8:2 - 8:31
+
+9:0 RET 
+9:1 HALT
+9:2 - 9:3
+
+
+Example: 
+
+; x * 10 = (x * 8) + (x * 2)
+
+str1: "hello world"
+str2: resb 20
+
+; r3 = dest
+; r4 = src
+strcpy: // 13 bytes
+loop1:  
+	ldr r6, byte [r4+] 
+	str r6, byte [r3+] 
+
+	bne r0, r6, loop1 
+
+	ret
+
+ADVANCED INTEGER ISA:
+0  OPC6, REG5, REG5, SZ2, IN2, SOFF12  (6+5+5+4+12   = 32 bits) (1 ins)  // 4 byte loads
+1  OPC6, REG5, REG5, SZ2, IN2, SOFF12  (6+5+5+4+12   = 32 bits) (1 ins)  // 4 byte stores
+
+2  OPC6, REG5, REG5, SZ2, IN2, SOFF4   (6+5+5+4+4    = 24 bits) (1 ins)  // 3 byte compressed loads
+3  OPC6, REG5, REG5, SZ2, IN2, SOFF4   (6+5+5+4+4    = 24 bits) (1 ins)  // 3 byte compressed stores
+4  OPC6, REG5, REG5                    (6+5+5        = 16 bits) (1 ins)  // 2 byte MOV
+
+5  OPC6, REG5, REG5, IN4, SIMM12       (6+5+5+4+12   = 32 bits) (16 ins) // 4 byte reg-reg-imm arithmetic
+
+6  OPC6, REG5, REG5, IN2, SIMM6        (6+5+5+4+12   = 32 bits) (4 ins)  // 3 byte compressed reg-reg-imm arithmetic
+
+7  OPC6, REG5, REG5, IN3, SOFF13       (6+5+5+3+13   = 32 bits) (8 ins)  // 4 byte branch instructions, cmp reg-reg
+8  OPC6, REG5, IMM5, IN3, SOFF13       (6+5+5+3+13   = 32 bits) (8 ins)  // 4 byte branch instructions, cmp reg-imm
+9  OPC6, REG5, REG5, IN2, IMM6         (6+5+5+2+6    = 24 bits) (4 ins)  // 3 byte shift instructions
+10 OPC6, REG5, REG5, REG5, IN3         (6+5+5+5+3    = 24 bits) (8 ins)  // 3 byte reg-reg-reg instructions
+11 OPC6, REG5, IN5                     (6+5+5        = 16 bits) (32 ins) // 2 byte single reg instructions2
+12 OPC6, IN2, SIMM16                   (6+2+16       = 24 bits) (4 ins)  // 3 byte imm16 instructions
+13 OPC6, REG5, IN5, IMM32              (6+5+5+32     = 48 bits) (32 ins) // 6 byte reg-imm32 instructions
+14 OPC6, IN2                           (6+2          = 8  bits) (4 ins)  // 1 byte instructions
+15 OPC6, REG5, IMM5                    (6+5+5        = 16 bits) (1 ins)  // 2 byte compressed load immediate
+
+INTEGER ISA:
+0  OPC6, REG5, REG5, SZ2, IN2, SOFF12  (6+5+5+4+12   = 32 bits) (1 ins)  // 4 byte loads
+1  OPC6, REG5, REG5, SZ2, IN2, SOFF12  (6+5+5+4+12   = 32 bits) (1 ins)  // 4 byte stores
+7  OPC6, REG5, REG5, IN3, SOFF13       (6+5+5+3+13   = 32 bits) (8 ins)  // 4 byte branch instructions, cmp reg-reg
+8  OPC6, REG5, IMM5, IN3, SOFF13       (6+5+5+3+13   = 32 bits) (8 ins)  // 4 byte branch instructions, cmp reg-imm
+9  OPC6, REG5, REG5, IN2, IMM6         (6+5+5+2+6    = 24 bits) (4 ins)  // 3 byte shift instructions
+10 OPC6, REG5, REG5, REG5, IN3         (6+5+5+5+3    = 24 bits) (8 ins)  // 3 byte reg-reg-reg instructions
+5  OPC6, REG5, REG5, IN4, SIMM12       (6+5+5+4+12   = 32 bits) (16 ins) // 4 byte reg-reg-imm arithmetic
+13 OPC6, REG5, IN5, IMM32              (6+5+5+32     = 48 bits) (32 ins) // 6 byte reg-imm32 instructions
+
+0 LDR (INTEGER)
+1 STR (INTEGER)
+
+2:0 ADDI (INTEGER)
+2:1 ANDI (INTEGER)
+2:2 XORI (INTEGER)
+2:3 ORI  (INTEGER)
+
+3:0 BEQ  (INTEGER)
+3:1 BNE  (INTEGER)
+3:2 BLT  (INTEGER)
+3:3 BLTU (INTEGER)
+3:4 BGE  (INTEGER)
+3:5 BGEU (INTEGER)
+
+4:0 SHLI (INTEGER)
+4:1 SHRI (INTEGER)
+4:2 SARI (INTEGER)
+
+5:0 LDI (INTEGER)
+5:1 LUI (INTEGER)
+
+6:0 ADD (INTEGER)
+6:1 SUB (INTEGER)
+6:2 AND (INTEGER)
+6:3 OR  (INTEGER)
+6:4 XOR (INTEGER)
+6:5 SHL (INTEGER)
+6:6 SHR (INTEGER)
+6:7 SAR (INTEGER)
+
+7:
+
+REGISTER CODE 0 = Zero register (read-only)
+REGISTER CODE 1 = Instruction Pointer (read-only)
+REGISTER CODE 2 = Stack Pointer (readable writeable)
